@@ -76,15 +76,15 @@ namespace EchoRelayInstaller {
             };
             menu.Children.Add(GlobalVariables.passwordBox);
 
-            var nextButton = new Button { Text = "Next", Padding = new Thickness(0,0,0,10) };
+            var nextButton = new Button { Text = "Next", FontSize = 24 };
             nextButton.Clicked += checkCreds;
             menu.Children.Add(nextButton);
 
             passwordError = new Label
             {
                 Text = "Text",
-                FontSize = 12,
-
+                FontSize = 15,
+                HorizontalOptions = LayoutOptions.Center,
                 Padding = new Thickness(0, 0, 0, 10),
                 IsVisible = false,
             };

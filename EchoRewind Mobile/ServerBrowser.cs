@@ -24,7 +24,6 @@ namespace EchoRelayInstaller
 
         Servers[] servers;
         String apkFile;
-        String obbFile;
         int selectedServer;
 
         public ServerBrowser()
@@ -59,17 +58,6 @@ namespace EchoRelayInstaller
             };
             serverBrowserMenu.Children.Add(header);
 
-/*            var serverSelectLabel = new Label
-            {
-                Text = "Select a server",
-                FontSize = 12,
-                TranslationX = 10,
-                MaximumWidthRequest = width - 20,
-
-                Padding = new Thickness(0, 0, 0, 10),
-            };
-            serverBrowserMenu.Children.Add(serverSelectLabel);*/
-
             var serverInfo = new StackLayout();
 
             ListView serverList = new ListView
@@ -84,6 +72,7 @@ namespace EchoRelayInstaller
                 if (serverBrowserMenu.Children.Contains(serverInfo))
                 {
                     serverBrowserMenu.Children.Remove(serverInfo);
+                    return;
                 }
                 selectedServer = e.SelectedItemIndex;
                 var server = servers[e.SelectedItemIndex];
@@ -126,11 +115,11 @@ namespace EchoRelayInstaller
 
                 var connectButton = new Button
                 {
-                    Text = "Join on Quest",
+                    Text = "Patch APK",
                     HorizontalOptions = LayoutOptions.Center,
-                    Padding = new Thickness(0, 0, 0, 20),
                     FontSize = 24,
-                    TranslationY = 10,
+                    WidthRequest = 200,
+                    TranslationY = -10,
                 };
                 serverInfo.Children.Add(connectButton);
                 connectButton.Clicked += filePicking;
