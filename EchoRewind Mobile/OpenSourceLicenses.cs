@@ -55,8 +55,7 @@ namespace EchoRelayInstaller
 
             var openSourceLicenses = new Label
             {
-                Text = "Echo Relay Quest Patcher is licensed under the MIT License.\n\n" +
-                "Echo Relay Quest Patcher uses the following third-party libraries and software:\n\n"
+                Text = "Echo Relay Quest Patcher uses the following third-party libraries and software:\n\n"
             };
 
             menu.Children.Add(openSourceLicenses);
