@@ -48,7 +48,7 @@ namespace EchoRelayInstaller {
                 Title = "";
                 ToolbarItems.Clear();
 
-                ToolbarItems.Add(new ToolbarItem("Third-Party Liences", null, () =>
+                ToolbarItems.Add(new ToolbarItem("Third-Party Licences", null, () =>
                 {
                     Navigation.PushAsync(new OpenSourceLicenses());
                 }));
@@ -69,7 +69,7 @@ namespace EchoRelayInstaller {
 #endif
 
 #if WINDOWS
-            ToolbarItems.Add(new ToolbarItem("Third-Party Liences", null, () =>
+            ToolbarItems.Add(new ToolbarItem("Third-Party Licences", null, () =>
             {
                 Navigation.PushAsync(new OpenSourceLicenses());
             }));

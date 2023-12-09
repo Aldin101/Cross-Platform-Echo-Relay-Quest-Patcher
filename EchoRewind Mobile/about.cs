@@ -27,7 +27,7 @@ namespace EchoRelayInstaller
 
             var aboutText = new Label
             {
-                Text = "Echo Relay Quest Patcher is a tools created by Aldin101 that allows you to patch Echo VR APKs for use with Echo Relay.\n\nNeed help? Contact me on Dicord: @aldin101"
+                Text = "Echo Relay Quest Patcher is a tools created by Aldin101 that allows you to patch Echo VR APKs for use with Echo Relay.\n\nNeed help? Contact me on Discord: @aldin101"
             };
 
             menu.Children.Add(aboutText);
