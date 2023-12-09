@@ -60,11 +60,18 @@ namespace EchoRelayInstaller
             };
 
             menu.Children.Add(openSourceLicenses);
-
+#if ANDROID
+            var software = new ListView
+            {
+                ItemsSource = GlobalVariables.openSourceLicencesList.Select(s => s.Name).ToList(),
+                BackgroundColor = Color.FromRgb(0, 0, 0),
+            };
+#else
             var software = new ListView
             {
                 ItemsSource = GlobalVariables.openSourceLicencesList.Select(s => s.Name).ToList(),
             };
+#endif
 
             menu.Children.Add(software);
 

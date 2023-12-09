@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using System.Reflection;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Diagnostics;
 
 namespace EchoRelayInstaller
 {
@@ -57,10 +58,17 @@ namespace EchoRelayInstaller
         }
 
         public bool patching = false;
+        string downloadsPath;
 
         public async Task patchingSystems(Servers[] servers, int selectedServer, String apk)
         {
+#if ANDROID
+            downloadsPath = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads).AbsolutePath;
+#endif
 
+#if WINDOWS
+            downloadsPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/downloads/";
+#endif
             GameConfig config = new GameConfig();
             config.apiservice_host = $"http://{servers[selectedServer].IP}:{servers[selectedServer].port}/api";
             config.configservice_host = $"ws://{servers[selectedServer].IP}:{servers[selectedServer].port}/config";
@@ -129,7 +137,7 @@ namespace EchoRelayInstaller
                 crashLog.AppendLine($"Error: {errorString}\n");
                 crashLog.AppendLine($"Time: {DateTime.Now}\n");
                 crashLog.AppendLine($"Version: {Assembly.GetExecutingAssembly().GetName().Version}\n");
-                var crashLogPath = Path.Combine(Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads).AbsolutePath, $"EchoRelayInstallerCrash{DateTime.Now}.txt");
+                var crashLogPath = Path.Combine(downloadsPath, $"EchoRelayInstallerCrash{DateTime.Now}.txt");
                 await File.WriteAllTextAsync(crashLogPath, crashLog.ToString());
                 Environment.Exit(0);
             }
@@ -179,9 +187,10 @@ namespace EchoRelayInstaller
 
             if (!File.Exists(configPath))
                 ExitLog("Invalid Config: Config not found, please confirm config is in the same directory as the executable");
-
-            /*        if (!Environment.GetEnvironmentVariable("PATH")!.ToLower().Contains("java"))
-                        ExitLog("Java not found: Please confirm you have JDK Development Kit installed");*/
+#if WINDOWS
+            if (!Environment.GetEnvironmentVariable("PATH")!.ToLower().Contains("java"))
+                ExitLog("Java not found: Please confirm you have JDK Development Kit installed");
+#endif
             string ConfigString;
             try
             {
@@ -210,6 +219,10 @@ namespace EchoRelayInstaller
             using var libpnsovr_patchStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.libpnsovr_patch.bin");
             if (libpnsovr_patchStream == null)
                 ExitLog("libpnsovr_patch missing!");
+
+            using var uberJarStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.uber.jar");
+            if (uberJarStream == null)
+               ExitLog("uber.jar missing!");
         }
 
         public async void StartPatching(string[] args)
@@ -221,7 +234,7 @@ namespace EchoRelayInstaller
             Console.WriteLine("Generating paths...");
             var originalApkPath = args[0];
             var baseDir = Path.GetDirectoryName(args[0]);
-            var newApkPath = Path.Join(Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads).AbsolutePath, $"r15_goldmaster_store_patched.apk");
+            var newApkPath = Path.Join(downloadsPath, $"r15_goldmaster_store_patched.apk");
             var configPath = Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "config.json");
 
             Console.WriteLine("Checking prerequisites...");
@@ -271,33 +284,48 @@ namespace EchoRelayInstaller
                 Directory.Delete(miscDir, true);
             Directory.CreateDirectory(miscDir);
 
-            /*        Console.WriteLine("Extracting uber.jar...");
-                    var uberJarPath = Path.Join(miscDir, "uber.jar");
-                    var uberJarStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.uber.jar");
+            string unsignedApkPath;
 
-                    Console.WriteLine("Writing uber.jar...");
-                    var uberJarFile = File.Create(uberJarPath);
-                    uberJarStream.CopyTo(uberJarFile);
-                    uberJarStream.Close();
-                    uberJarFile.Close();*/
-            Console.WriteLine("Creating apk...");
-            var unsignedApkPath = Path.Join(miscDir, "unsigned.apk");
+#if WINDOWS
+
+            Console.WriteLine("Extracting uber.jar...");
+            var uberJarPath = Path.Join(miscDir, "uber.jar");
+            var uberJarStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.uber.jar");
+
+            Console.WriteLine("Writing uber.jar...");
+            var uberJarFile = File.Create(uberJarPath);
+            uberJarStream.CopyTo(uberJarFile);
+            uberJarStream.Close();
+            uberJarFile.Close();
+
+            Console.WriteLine("Creating unsigned apk...");
+            unsignedApkPath = Path.Join(miscDir, "unsigned.apk");
             ZipFile.CreateFromDirectory(extractedApkDir, unsignedApkPath);
 
-            /*        Console.WriteLine("Signing unsigned apk...");
-                    Process process = new();
-                    process.StartInfo.FileName = "java";
-                    process.StartInfo.Arguments = $"-jar \"{uberJarPath}\" -a \"{unsignedApkPath}\" --out \"{miscDir}\" --allowResign";
-                    process.Start();
-                    process.WaitForExit();
+            Console.WriteLine("Signing unsigned apk...");
+            Process process = new();
+            process.StartInfo.FileName = "java";
+            process.StartInfo.Arguments = $"-jar \"{uberJarPath}\" -a \"{unsignedApkPath}\" --out \"{miscDir}\" --allowResign";
+            process.Start();
+            process.WaitForExit();
 
-                    if (process.ExitCode != 0)
-                        ExitLog("Signing Failed: Please try again");*/
+            Console.WriteLine("Moving signed apk...");
+            if (File.Exists(newApkPath))
+                File.Delete(newApkPath);
+            File.Move(Path.Join(miscDir, "unsigned-aligned-debugSigned.apk"), newApkPath);
+
+#endif
+
+#if ANDROID
+            Console.WriteLine("Creating apk...");
+            unsignedApkPath = Path.Join(miscDir, "unsigned.apk");
+            ZipFile.CreateFromDirectory(extractedApkDir, unsignedApkPath);
+
             Console.WriteLine("Moving apk...");
             if (File.Exists(newApkPath))
                 newApkPath = Path.Join(Path.GetDirectoryName(newApkPath)!, $"r15_goldmaster_store_patched_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.apk");
-
             File.Move(unsignedApkPath, newApkPath);
+#endif
             Console.WriteLine("Cleaning up temporary files...");
             Directory.Delete(extractedApkDir, true);
             Directory.Delete(miscDir, true);

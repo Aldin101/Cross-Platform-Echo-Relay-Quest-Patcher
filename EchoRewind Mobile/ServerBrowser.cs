@@ -1,5 +1,4 @@
-﻿using GoogleGson;
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -42,10 +41,11 @@ namespace EchoRelayInstaller
 
             var serverNames = servers.Select(s => s.name).ToList();
 
+
             serverBrowserMenu = new StackLayout();
 
             Title = "Echo Relay Quest Patcher";
-
+#if ANDROID
             toolBarItem = (new ToolbarItem("⋅ ⋅ ⋅", null, () =>
             {
                 Title = "";
@@ -69,12 +69,20 @@ namespace EchoRelayInstaller
                 }));
             }));
             ToolbarItems.Add(toolBarItem);
+#endif
 
+#if WINDOWS
+            ToolbarItems.Add(new ToolbarItem("Third-Party Liences", null, () =>
+            {
+                Navigation.PushAsync(new OpenSourceLicenses());
+            }));
+
+            ToolbarItems.Add(new ToolbarItem("About", null, () =>
+            {
+                Navigation.PushAsync(new AboutPage());
+            }));
+#endif
             var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
-
-            var width = mainDisplayInfo.Width;
-
-            var height = mainDisplayInfo.Height;
 
             var header = new Label
             {
@@ -88,12 +96,22 @@ namespace EchoRelayInstaller
 
             serverInfo = new StackLayout();
 
+#if ANDROID
+            serverList = new ListView
+            {
+                ItemsSource = serverNames,
+                BackgroundColor = Color.FromRgb(0, 0, 0),
+                TranslationX = 10,
+            };
+
+#else
             serverList = new ListView
             {
                 ItemsSource = serverNames,
                 TranslationX = 10,
-                MaximumWidthRequest = width - 20,
             };
+#endif
+
 
             serverList.ItemTapped += async (sender, e) =>
             {
@@ -129,8 +147,7 @@ namespace EchoRelayInstaller
                 {
                     Source = "resources/images/loading.gif",
                     HorizontalOptions = LayoutOptions.Center,
-                    MaximumHeightRequest = (width - 20) * (16 / 9),
-                    MaximumWidthRequest = width - 20,
+                    MaximumHeightRequest = 250,
                     TranslationY = 10,
                 };
                 serverInfo.Children.Add(serverInfoImage);

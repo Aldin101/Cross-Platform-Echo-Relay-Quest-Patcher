@@ -1,8 +1,6 @@
-﻿using AndroidX.Core.App;
-using AndroidX.Core.Content;
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-//using Microsoft.UI.Xaml.Controls;
+using Microsoft.Maui.Graphics.Text;
 using System.Text.RegularExpressions;
 
 namespace EchoRelayInstaller {
@@ -44,6 +42,7 @@ namespace EchoRelayInstaller {
             };
             menu.Children.Add(header);
 
+#if ANDROID
             toolBarItem = (new ToolbarItem("⋅ ⋅ ⋅", null, () =>
             {
                 Title = "";
@@ -67,6 +66,19 @@ namespace EchoRelayInstaller {
                 }));
             }));
             ToolbarItems.Add(toolBarItem);
+#endif
+
+#if WINDOWS
+            ToolbarItems.Add(new ToolbarItem("Third-Party Liences", null, () =>
+            {
+                Navigation.PushAsync(new OpenSourceLicenses());
+            }));
+
+            ToolbarItems.Add(new ToolbarItem("About", null, () =>
+            {
+                Navigation.PushAsync(new AboutPage());
+            }));
+#endif
 
             var usernameLabel = new Label
             {
