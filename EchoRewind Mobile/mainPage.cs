@@ -10,10 +10,19 @@ namespace EchoRelayInstaller {
     {
         public static Entry usernameBox;
         public static Entry passwordBox;
+        public static List<OpenSourceLicencesList> openSourceLicencesList = new List<OpenSourceLicencesList>();
+
     }
+    public class OpenSourceLicencesList
+    {
+        public string Name { get; set; }
+        public string Content { get; set; }
+    }
+
     public partial class MainPage : ContentPage
     {
         Label passwordError;
+        ToolbarItem toolBarItem;
 
         public MainPage()
         {
@@ -34,6 +43,30 @@ namespace EchoRelayInstaller {
                 TranslationY = 10,
             };
             menu.Children.Add(header);
+
+            toolBarItem = (new ToolbarItem("⋅ ⋅ ⋅", null, () =>
+            {
+                Title = "";
+                ToolbarItems.Clear();
+
+                ToolbarItems.Add(new ToolbarItem("Third-Party Liences", null, () =>
+                {
+                    Navigation.PushAsync(new OpenSourceLicenses());
+                }));
+
+                ToolbarItems.Add(new ToolbarItem("About", null, () =>
+                {
+                    Navigation.PushAsync(new AboutPage());
+                }));
+
+                ToolbarItems.Add(new ToolbarItem("→", null, () =>
+                {
+                    ToolbarItems.Clear();
+                    Title = "Echo Relay Quest Patcher";
+                    ToolbarItems.Add(toolBarItem);
+                }));
+            }));
+            ToolbarItems.Add(toolBarItem);
 
             var usernameLabel = new Label
             {
@@ -93,20 +126,8 @@ namespace EchoRelayInstaller {
             Content = menu;
         }
 
-
-        public async Task CheckForPermissions()
-        {
-            var status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
-            if (status != PermissionStatus.Granted)
-            {
-                status = await Permissions.RequestAsync<Permissions.StorageWrite>();
-            }
-        }
-
         public void checkCreds(object sender, System.EventArgs e)
         {
-            //CheckForPermissions();
-
             if (GlobalVariables.usernameBox.Text == "" || GlobalVariables.passwordBox.Text == "")
             {
                 passwordError.Text = "Please enter a username and password";

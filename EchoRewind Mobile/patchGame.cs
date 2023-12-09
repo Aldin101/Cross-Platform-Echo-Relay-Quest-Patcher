@@ -56,6 +56,8 @@ namespace EchoRelayInstaller
             patchingSystems(servers, selectedServer, apk);
         }
 
+        public bool patching = false;
+
         public async Task patchingSystems(Servers[] servers, int selectedServer, String apk)
         {
 
@@ -78,13 +80,27 @@ namespace EchoRelayInstaller
                 Thread.CurrentThread.IsBackground = true;
                 StartPatching(apkPath);
             });
+            patching = true;
             thread.Start();
             
             while (thread.IsAlive)
             {
                 await Task.Delay(1000);
             }
+            patching = false;
             header.Text = "APK Ready, it can be found in your downloads folder\nPlease sign the APK with apk-signer and load onto headset with bugjaeger. Both can be found in the Google Play Store.";
+        }
+
+        protected override bool OnBackButtonPressed()
+        {
+            if (patching)
+            {
+                return true;
+            }
+            else
+            {
+                return base.OnBackButtonPressed();
+            }
         }
 
         private class Hashes

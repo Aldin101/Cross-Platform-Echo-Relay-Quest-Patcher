@@ -54,6 +54,11 @@
 
 
 	<ItemGroup>
+	  <Compile Remove="OpenSourceLicences.cs" />
+	</ItemGroup>
+
+
+	<ItemGroup>
 	  <MauiAsset Remove="Resources\Raw\AboutAssets.txt" />
 	</ItemGroup>
 

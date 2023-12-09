@@ -24,6 +24,7 @@ namespace EchoRelayInstaller
 
         Servers[] servers;
         String apkFile;
+        ToolbarItem toolBarItem;
         int selectedServer;
 
         public ServerBrowser()
@@ -41,6 +42,30 @@ namespace EchoRelayInstaller
             var serverBrowserMenu = new StackLayout();
 
             Title = "Echo Relay Quest Patcher";
+
+            toolBarItem = (new ToolbarItem("⋅ ⋅ ⋅", null, () =>
+            {
+                Title = "";
+                ToolbarItems.Clear();
+
+                ToolbarItems.Add(new ToolbarItem("Third-Party Liences", null, () =>
+                {
+                    Navigation.PushAsync(new OpenSourceLicenses());
+                }));
+
+                ToolbarItems.Add(new ToolbarItem("About", null, () =>
+                {
+                    Navigation.PushAsync(new AboutPage());
+                }));
+
+                ToolbarItems.Add(new ToolbarItem("→", null, () =>
+                {
+                    ToolbarItems.Clear();
+                    Title = "Echo Relay Quest Patcher";
+                    ToolbarItems.Add(toolBarItem);
+                }));
+            }));
+            ToolbarItems.Add(toolBarItem);
 
             var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
 
