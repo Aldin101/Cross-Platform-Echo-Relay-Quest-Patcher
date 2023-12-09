@@ -25,6 +25,9 @@ namespace EchoRelayInstaller
         Servers[] servers;
         String apkFile;
         ToolbarItem toolBarItem;
+        ListView serverList;
+        StackLayout serverBrowserMenu;
+        StackLayout serverInfo;
         int selectedServer;
 
         public ServerBrowser()
@@ -39,7 +42,7 @@ namespace EchoRelayInstaller
 
             var serverNames = servers.Select(s => s.name).ToList();
 
-            var serverBrowserMenu = new StackLayout();
+            serverBrowserMenu = new StackLayout();
 
             Title = "Echo Relay Quest Patcher";
 
@@ -83,24 +86,28 @@ namespace EchoRelayInstaller
             };
             serverBrowserMenu.Children.Add(header);
 
-            var serverInfo = new StackLayout();
+            serverInfo = new StackLayout();
 
-            ListView serverList = new ListView
+            serverList = new ListView
             {
                 ItemsSource = serverNames,
                 TranslationX = 10,
                 MaximumWidthRequest = width - 20,
             };
 
-            serverList.ItemSelected += async (sender, e) =>
+            serverList.ItemTapped += async (sender, e) =>
             {
-                if (serverBrowserMenu.Children.Contains(serverInfo))
+                serverBrowserMenu.Children.Remove(serverInfo);
+
+                if (e.ItemIndex == selectedServer)
                 {
-                    serverBrowserMenu.Children.Remove(serverInfo);
+                    serverList.SelectedItem = null;
+                    selectedServer = 420;
                     return;
                 }
-                selectedServer = e.SelectedItemIndex;
-                var server = servers[e.SelectedItemIndex];
+
+                selectedServer = e.ItemIndex;
+                var server = servers[e.ItemIndex];
                 var serverIP = server.IP;
                 var serverPort = server.port;
                 var serverDescription = server.description;
@@ -156,7 +163,23 @@ namespace EchoRelayInstaller
 
             serverBrowserMenu.Children.Add(serverList);
 
+            selectedServer = 420;
+
             Content = serverBrowserMenu;
+        }
+
+        protected override bool OnBackButtonPressed()
+        {
+            if (selectedServer != 420)
+            {
+                selectedServer = 420;
+                serverList.SelectedItem = null;
+                serverBrowserMenu.Children.Remove(serverInfo);
+                return true;
+            } else
+            {
+                return base.OnBackButtonPressed();
+            }
         }
 
         public async void filePicking(object sender, System.EventArgs e)
