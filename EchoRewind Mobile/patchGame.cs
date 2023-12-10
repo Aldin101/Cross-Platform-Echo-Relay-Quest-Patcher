@@ -98,12 +98,8 @@ namespace EchoRelayInstaller
             }
             patching = false;
 
-#if ANDROID
-            header.Text = "APK Ready, it can be found in your downloads folder\nPlease sign the APK with apk-signer and load onto headset with bugjaeger. Both can be found in the Google Play Store.";
-#endif
-#if WINDOWS
             header.Text = "APK Ready, it can be found in your downloads folder\nYou can load it onto your headset with SideQuest";
-#endif
+
         }
 
         protected override bool OnBackButtonPressed()
