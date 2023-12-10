@@ -87,13 +87,13 @@
 
 	<ItemGroup>
 		<EmbeddedResource Include="Resources\Raw\libpnsovr_patch.bin" />
-		<EmbeddedResource Include="Resources\Raw\uber.jar" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="BsDiff" Version="1.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="QuestPatcher.Zip" Version="1.1.2" />
 	</ItemGroup>
 
 </Project>

@@ -10,6 +10,7 @@ using System.Reflection;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Diagnostics;
+using QuestPatcher.Zip;
 
 namespace EchoRelayInstaller
 {
@@ -193,10 +194,7 @@ namespace EchoRelayInstaller
 
             if (!File.Exists(configPath))
                 ExitLog("Invalid Config: Config not found, please confirm config is in the same directory as the executable");
-#if WINDOWS
-            if (!Environment.GetEnvironmentVariable("PATH")!.ToLower().Contains("java"))
-                ExitLog("Java not found: Please confirm you have JDK Development Kit installed");
-#endif
+
             string ConfigString;
             try
             {
@@ -225,10 +223,6 @@ namespace EchoRelayInstaller
             using var libpnsovr_patchStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.libpnsovr_patch.bin");
             if (libpnsovr_patchStream == null)
                 ExitLog("libpnsovr_patch missing!");
-
-            using var uberJarStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.uber.jar");
-            if (uberJarStream == null)
-               ExitLog("uber.jar missing!");
         }
 
         public async void StartPatching(string[] args)
@@ -290,48 +284,21 @@ namespace EchoRelayInstaller
                 Directory.Delete(miscDir, true);
             Directory.CreateDirectory(miscDir);
 
-            string unsignedApkPath;
-
-#if WINDOWS
-
-            Console.WriteLine("Extracting uber.jar...");
-            var uberJarPath = Path.Join(miscDir, "uber.jar");
-            var uberJarStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.uber.jar");
-
-            Console.WriteLine("Writing uber.jar...");
-            var uberJarFile = File.Create(uberJarPath);
-            uberJarStream.CopyTo(uberJarFile);
-            uberJarStream.Close();
-            uberJarFile.Close();
-
             Console.WriteLine("Creating unsigned apk...");
-            unsignedApkPath = Path.Join(miscDir, "unsigned.apk");
+            string unsignedApkPath = Path.Join(miscDir, "unsigned.apk");
             ZipFile.CreateFromDirectory(extractedApkDir, unsignedApkPath);
 
             Console.WriteLine("Signing unsigned apk...");
-            Process process = new();
-            process.StartInfo.FileName = "java";
-            process.StartInfo.Arguments = $"-jar \"{uberJarPath}\" -a \"{unsignedApkPath}\" --out \"{miscDir}\" --allowResign";
-            process.Start();
-            process.WaitForExit();
+            var unsignedApkSteam = File.Open(unsignedApkPath, FileMode.Open);
+            //sign APK (this is how you do it with this lib)
+            QuestPatcher.Zip.ApkZip.Open(unsignedApkSteam).Dispose();
+            unsignedApkSteam.Close();
 
             Console.WriteLine("Moving signed apk...");
             if (File.Exists(newApkPath))
                 File.Delete(newApkPath);
-            File.Move(Path.Join(miscDir, "unsigned-aligned-debugSigned.apk"), newApkPath);
-
-#endif
-
-#if ANDROID
-            Console.WriteLine("Creating apk...");
-            unsignedApkPath = Path.Join(miscDir, "unsigned.apk");
-            ZipFile.CreateFromDirectory(extractedApkDir, unsignedApkPath);
-
-            Console.WriteLine("Moving apk...");
-            if (File.Exists(newApkPath))
-                newApkPath = Path.Join(Path.GetDirectoryName(newApkPath)!, $"r15_goldmaster_store_patched_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.apk");
             File.Move(unsignedApkPath, newApkPath);
-#endif
+
             Console.WriteLine("Cleaning up temporary files...");
             Directory.Delete(extractedApkDir, true);
             Directory.Delete(miscDir, true);
