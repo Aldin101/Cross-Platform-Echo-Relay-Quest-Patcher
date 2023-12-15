@@ -97,8 +97,12 @@ namespace EchoRelayInstaller
                 await Task.Delay(1000);
             }
             patching = false;
-
+#if WINDOWS
             header.Text = "APK Ready, it can be found in your downloads folder\nYou can load it onto your headset with SideQuest";
+#endif
+#if ANDROID
+            header.Text = "APK Ready, it can be found in your downloads folder\nYou can load it onto your headset with Bugjaeger";
+#endif
 
         }
 
@@ -231,6 +235,9 @@ namespace EchoRelayInstaller
             var originalApkPath = args[0];
             var baseDir = Path.GetDirectoryName(args[0]);
             var newApkPath = Path.Join(downloadsPath, $"r15_goldmaster_store_patched.apk");
+            //check if apk already exists
+            if (File.Exists(newApkPath))
+                newApkPath = Path.Join(downloadsPath, $"r15_goldmaster_store_patched_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.apk");
             var configPath = Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "config.json");
 
             Console.WriteLine("Checking prerequisites...");
