@@ -84,6 +84,11 @@ namespace EchoRelayInstaller
             var filePath = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.Personal), "config.json");
             await File.WriteAllTextAsync(filePath, json);
             string[] apkPath = new string[] { apk };
+
+            if (File.Exists(Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "crashLog.txt")))
+                File.Delete(Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "crashLog.txt"));
+
+
             Thread thread = new Thread(() =>
             {
                 Thread.CurrentThread.IsBackground = true;
@@ -92,16 +97,26 @@ namespace EchoRelayInstaller
             patching = true;
             thread.Start();
             
-            while (thread.IsAlive)
+            while (thread.IsAlive && File.Exists(Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "crashLog.txt")) == false)
             {
                 await Task.Delay(1000);
             }
             patching = false;
+
+            if (File.Exists(Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "crashLog.txt")))
+            {
+                var errorMessage = await File.ReadAllTextAsync(Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "crashLog.txt"));
+                File.Delete(Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "crashLog.txt"));
+                await DisplayAlert("Error", errorMessage, "OK");
+                await Navigation.PopAsync();
+                return;
+            }
+
 #if WINDOWS
             header.Text = "APK Ready, it can be found in your downloads folder\nYou can load it onto your headset with SideQuest";
 #endif
 #if ANDROID
-            header.Text = "APK Ready, it can be found in your downloads folder\nYou can load it onto your headset with Bugjaeger";
+            header.Text = "APK Ready, it can be found in your downloads folder\n\nIf you are using an Android phone you can use Bugjaeger to load it onto your headset.";
 #endif
 
         }
@@ -139,15 +154,14 @@ namespace EchoRelayInstaller
         {
             if (error)
             {
+                Console.WriteLine(errorString);
                 var crashLog = new StringBuilder();
-                crashLog.AppendLine("EchoRelayInstaller has crashed!\n");
-                crashLog.AppendLine($"Error: {errorString}\n");
-                crashLog.AppendLine($"Time: {DateTime.Now}\n");
-                crashLog.AppendLine($"Version: {Assembly.GetExecutingAssembly().GetName().Version}\n");
-                var crashLogPath = Path.Combine(downloadsPath, $"EchoRelayInstallerCrash{DateTime.Now}.txt");
+                crashLog.AppendLine(errorString);
+                var crashLogPath = Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "crashLog.txt");
                 await File.WriteAllTextAsync(crashLogPath, crashLog.ToString());
-                Environment.Exit(0);
+                Thread.Sleep(9999999);
             }
+            return;
         }
 
 
@@ -184,16 +198,16 @@ namespace EchoRelayInstaller
             return true;
         }
 
-        void CheckPrerequisites(string originalApkPath, string configPath)
+        public async Task CheckPrerequisites(string originalApkPath, string configPath)
         {
             if (!File.Exists(originalApkPath))
-                ExitLog("Invalid EchoVR APK: Please drag and drop EchoVR APK onto exe");
+                await ExitLog("Invalid EchoVR APK: Please drag and drop EchoVR APK onto exe");
 
             if (CalculateMD5(originalApkPath) != Hashes.APK)
-                ExitLog("Invalid EchoVR APK (Hash mismatch) : please download the correct APK via\nOculusDB: https://oculusdb.rui2015.me/id/2215004568539258\nVersion: 4987566" + CalculateMD5(originalApkPath));
+                await ExitLog("Invalid EchoVR APK (Hash mismatch) : please download the correct APK via\nOculusDB: https://oculusdb.rui2015.me/id/2215004568539258\nVersion: 4987566" + CalculateMD5(originalApkPath));
 
             if (!File.Exists(configPath))
-                ExitLog("Invalid Config: Config not found, please confirm config is in the same directory as the executable");
+                await ExitLog("Invalid Config: Config not found, please confirm config is in the same directory as the executable");
 
             string ConfigString;
             try
@@ -202,7 +216,7 @@ namespace EchoRelayInstaller
             }
             catch (Exception)
             {
-                ExitLog("Invalid Config: Config stream unreachable, please confirm no other programs are modifying config.json");
+                await ExitLog("Invalid Config: Config stream unreachable, please confirm no other programs are modifying config.json");
                 return; // Just to make the compiler happy
             }
 
@@ -213,23 +227,24 @@ namespace EchoRelayInstaller
             }
             catch (Exception)
             {
-                ExitLog("Invalid Config: Json could not be parsed, please confirm config formatting is correct");
+                await ExitLog("Invalid Config: Json could not be parsed, please confirm config formatting is correct");
                 return;
             }
 
             if (!CheckJson(ConfigJson))
-                ExitLog("Invalid Config: Service endpoints incorrect, please confrim all endpoitns are correct");
+                await ExitLog("Invalid Config: Service endpoints incorrect, please confrim all endpoitns are correct");
 
             using var libpnsovr_patchStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.libpnsovr_patch.bin");
             if (libpnsovr_patchStream == null)
-                ExitLog("libpnsovr_patch missing!");
+                await ExitLog("libpnsovr_patch missing!");
         }
 
         public async void StartPatching(string[] args)
         {
             Console.WriteLine("Parsing arguments...");
             if (args.Length == 0)
-                ExitLog("Invalid EchoVR APK: Please drag and drop EchoVR APK onto exe");
+                await ExitLog("Invalid EchoVR APK: Please drag and drop EchoVR APK onto exe");
+
 
             Console.WriteLine("Generating paths...");
             var originalApkPath = args[0];
@@ -241,7 +256,7 @@ namespace EchoRelayInstaller
             var configPath = Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "config.json");
 
             Console.WriteLine("Checking prerequisites...");
-            CheckPrerequisites(originalApkPath, configPath);
+            await CheckPrerequisites(originalApkPath, configPath);
 
             Console.WriteLine("Creating extraction directory...");
             var extractedApkDir = Path.Join(Path.GetTempPath(), "EchoQuestUnzip");
@@ -305,7 +320,7 @@ namespace EchoRelayInstaller
             Console.WriteLine("Cleaning up temporary files...");
             Directory.Delete(extractedApkDir, true);
             Directory.Delete(miscDir, true);
-            ExitLog("Finished creating patched apk! (r15_goldmaster_store_patched.apk)", false);
+            await ExitLog("Finished creating patched apk! (r15_goldmaster_store_patched.apk)", false);
         }
     }
 }
