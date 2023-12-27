@@ -30,7 +30,7 @@ namespace EchoRelayInstaller {
             //var width = menu.Width;
             var width = 720;
 
-            Title = "Echo Relay Quest Patcher";
+            Title = "Echo Navigator Standalone";
 
             var header = new Label
             {
@@ -61,7 +61,7 @@ namespace EchoRelayInstaller {
                 ToolbarItems.Add(new ToolbarItem("→", null, () =>
                 {
                     ToolbarItems.Clear();
-                    Title = "Echo Relay Quest Patcher";
+                    Title = "Echo Navigator Standalone";
                     ToolbarItems.Add(toolBarItem);
                 }));
             }));

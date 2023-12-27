@@ -32,7 +32,7 @@ namespace EchoRelayInstaller
         public ServerBrowser()
         {
 
-            var json = new WebClient().DownloadString("https://aldin101.github.io/echo-relay-server-browser/servers.json");
+            var json = new WebClient().DownloadString("https://aldin101.github.io/EchoNavigatorAPI/servers.json");
 
             JObject jsonObject = JObject.Parse(json);
             JArray jsondata = (JArray)jsonObject["online"];
@@ -44,7 +44,7 @@ namespace EchoRelayInstaller
 
             serverBrowserMenu = new StackLayout();
 
-            Title = "Echo Relay Quest Patcher";
+            Title = "Echo Navigator Standalone";
 #if ANDROID
             toolBarItem = (new ToolbarItem("⋅ ⋅ ⋅", null, () =>
             {
@@ -64,7 +64,7 @@ namespace EchoRelayInstaller
                 ToolbarItems.Add(new ToolbarItem("→", null, () =>
                 {
                     ToolbarItems.Clear();
-                    Title = "Echo Relay Quest Patcher";
+                    Title = "Echo Navigator Standalone";
                     ToolbarItems.Add(toolBarItem);
                 }));
             }));

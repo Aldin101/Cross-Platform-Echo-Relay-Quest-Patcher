@@ -10,7 +10,7 @@ namespace EchoRelayInstaller
     {
         public AboutPage()
         {
-            Title = "Echo Relay Quest Patcher";
+            Title = "Echo Navigator Standalone";
 
             var menu = new StackLayout();
 
@@ -27,7 +27,7 @@ namespace EchoRelayInstaller
 
             var aboutText = new Label
             {
-                Text = "Echo Relay Quest Patcher is a tools created by Aldin101 that allows you to patch Echo VR APKs for use with Echo Relay.\n\nNeed help? Contact me on Discord: @aldin101\n\nEcho Relay Quest Patcher is licensed under the MIT Licence and the source code is available on GitHub"
+                Text = "Echo Navigator Standalone is a tools created by Aldin101 that allows you to patch Echo VR APKs for use with Echo Relay.\n\nNeed help? Contact me on Discord: @aldin101\n\nEcho Navigator Standalone is licensed under the MIT Licence and the source code is available on GitHub"
             };
 
             menu.Children.Add(aboutText);

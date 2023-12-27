@@ -10,7 +10,7 @@ namespace EchoRelayInstaller
     {
         public OpenSourceLicensesPage(int license)
         {
-            Title = "Echo Relay Quest Patcher";
+            Title = "Echo Navigator Standalone";
 
             var menu = new StackLayout();
 

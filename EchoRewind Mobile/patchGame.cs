@@ -40,7 +40,7 @@ namespace EchoRelayInstaller
             serversGlobal = servers;
             selectedServerGlobal = selectedServer;
 
-            Title = "Echo Relay Quest Patcher";
+            Title = "Echo Navigator Standalone";
             
             var patchGameMenu = new StackLayout();
 
