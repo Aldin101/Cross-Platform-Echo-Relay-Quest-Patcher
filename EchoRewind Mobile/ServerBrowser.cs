@@ -29,11 +29,8 @@ namespace EchoRelayInstaller
         StackLayout serverInfo;
         int selectedServer;
 
-        public ServerBrowser()
+        public ServerBrowser(string json)
         {
-
-            var json = new WebClient().DownloadString("https://aldin101.github.io/EchoNavigatorAPI/servers.json");
-
             JObject jsonObject = JObject.Parse(json);
             JArray jsondata = (JArray)jsonObject["online"];
 

@@ -159,7 +159,10 @@ namespace EchoRelayInstaller
                 crashLog.AppendLine(errorString);
                 var crashLogPath = Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.Personal), "crashLog.txt");
                 await File.WriteAllTextAsync(crashLogPath, crashLog.ToString());
-                Thread.Sleep(9999999);
+                while (true)
+                {
+                    Thread.Sleep(9999999);
+                }
             }
             return;
         }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Text;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace EchoRelayInstaller {
@@ -9,6 +10,7 @@ namespace EchoRelayInstaller {
         public static Entry usernameBox;
         public static Entry passwordBox;
         public static List<OpenSourceLicencesList> openSourceLicencesList = new List<OpenSourceLicencesList>();
+        public static ActivityIndicator activityIndicator;
 
     }
     public class OpenSourceLicencesList
@@ -122,8 +124,22 @@ namespace EchoRelayInstaller {
             menu.Children.Add(GlobalVariables.passwordBox);
 
             var nextButton = new Button { Text = "Next", FontSize = 24 };
-            nextButton.Clicked += checkCreds;
+            nextButton.Clicked += (s, e) =>
+            {
+                passwordError.IsVisible = false;
+                checkCreds();
+                if (passwordError.IsVisible)
+                    return;
+
+                GlobalVariables.activityIndicator.IsVisible = true;
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    loadServerBrowser();
+                });
+            };
             menu.Children.Add(nextButton);
+
+            GlobalVariables.passwordBox.Completed += (s, e) => nextButton.SendClicked();
 
             passwordError = new Label
             {
@@ -135,10 +151,20 @@ namespace EchoRelayInstaller {
             };
             menu.Children.Add(passwordError);
 
+            GlobalVariables.activityIndicator = new ActivityIndicator
+            {
+                IsRunning = true,
+                IsVisible = false,
+                Color = Colors.Orange,
+                TranslationY = 10,
+                HorizontalOptions = LayoutOptions.CenterAndExpand,
+            };
+            menu.Children.Add(GlobalVariables.activityIndicator);
+
             Content = menu;
         }
 
-        public void checkCreds(object sender, System.EventArgs e)
+        public void checkCreds()
         {
             if (GlobalVariables.usernameBox.Text == "" || GlobalVariables.passwordBox.Text == "")
             {
@@ -174,9 +200,25 @@ namespace EchoRelayInstaller {
                 passwordError.IsVisible = true;
                 return;
             }
+        }
 
-            Navigation.PushAsync(new ServerBrowser());
+        public void loadServerBrowser()
+        {
+            string json;
+            try
+            {
+                json = new WebClient().DownloadString("https://aldin101.github.io/EchoNavigatorAPI/servers.json");
+            }
+            catch (WebException ex)
+            {
+                GlobalVariables.activityIndicator.IsVisible = false;
+                DisplayAlert("Error", "The Echo Navigator servers could not be contacted\nThis is usually because your network is blocking the Echo Navigator backend. You can try to use a mobile hotspot or VPN to fix this.", "OK");
+                return;
+            }
 
+            GlobalVariables.activityIndicator.IsVisible = false;
+            Navigation.PushAsync(new ServerBrowser(json));
+            return;
         }
     }
 }
