@@ -70,14 +70,22 @@ namespace EchoRelayInstaller
 #if WINDOWS
             downloadsPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/downloads/";
 #endif
+            string serverIP;
+            if (servers[selectedServer].port == null || servers[selectedServer].port == "")
+            {
+                serverIP = $"{servers[selectedServer].IP}";
+            } else {
+                serverIP = $"{servers[selectedServer].IP}:{servers[selectedServer].port}";
+            }
+
             GameConfig config = new GameConfig();
-            config.apiservice_host = $"http://{servers[selectedServer].IP}:{servers[selectedServer].port}/api";
-            config.configservice_host = $"ws://{servers[selectedServer].IP}:{servers[selectedServer].port}/config";
-            config.loginservice_host = $"ws://{servers[selectedServer].IP}:{servers[selectedServer].port}/login?auth={GlobalVariables.passwordBox.Text}&displayname={GlobalVariables.usernameBox.Text}";
-            config.matchingservice_host = $"ws://{servers[selectedServer].IP}:{servers[selectedServer].port}/matching";
-            config.serverdb_host = $"ws://{servers[selectedServer].IP}:{servers[selectedServer].port}/serverdb";
-            config.transactionservice_host = $"ws://{servers[selectedServer].IP}:{servers[selectedServer].port}/transaction";
-            config.publisher_lock = "rad15_live";
+            config.apiservice_host = $"http://{serverIP}/api";
+            config.configservice_host = $"ws://{serverIP}/config";
+            config.loginservice_host = $"ws://{serverIP}/login?auth={GlobalVariables.passwordBox.Text}&displayname={GlobalVariables.usernameBox.Text}";
+            config.matchingservice_host = $"ws://{serverIP}/matching";
+            config.serverdb_host = $"ws://{serverIP}/serverdb";
+            config.transactionservice_host = $"ws://{serverIP}/transaction";
+            config.publisher_lock = servers[selectedServer].publisherLock;
 
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(config);
 

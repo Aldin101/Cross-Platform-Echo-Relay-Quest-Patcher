@@ -27,10 +27,19 @@ namespace EchoRelayInstaller
 
             var aboutText = new Label
             {
-                Text = "Echo Navigator Standalone is a tools created by Aldin101 that allows you to patch Echo VR APKs for use with Echo Relay.\n\nNeed help? Contact me on Discord: @aldin101\n\nEcho Navigator Standalone is licensed under the MIT Licence and the source code is available on GitHub"
+                Text = "Echo Navigator Standalone is a tool created by Aldin101 that allows you to patch Echo VR APKs for use with Echo Relay.\n\nNeed help? Contact me on Discord: @aldin101\n\nEcho Navigator Standalone is licensed under the MIT Licence and the source code is available on GitHub"
             };
 
             menu.Children.Add(aboutText);
+
+            var versionNumber = new Label
+            {
+                Text = "Version: " + AppInfo.VersionString,
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.EndAndExpand,
+
+            };
+            menu.Children.Add(versionNumber);
 
             Content = menu;
         }

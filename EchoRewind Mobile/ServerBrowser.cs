@@ -17,6 +17,7 @@ namespace EchoRelayInstaller
         public string description { get; set; }
         public string longDescription { get; set; }
         public string image { get; set; }
+        public string publisherLock { get; set; }
     }
     public partial class ServerBrowser : ContentPage
     {
@@ -198,18 +199,6 @@ namespace EchoRelayInstaller
 
         public async void filePicking(object sender, System.EventArgs e)
         {
-/*            PickOptions pickOptionsObb = new PickOptions
-            {
-                PickerTitle = "Select OBB File",
-            };
-            obbFile = await FileSelector(pickOptionsObb, true);
-
-            if (obbFile == null)
-            {
-                await alert("Error", "File no selected");
-                return;
-            }*/
-
             PickOptions pickOptionsApk = new PickOptions
             {
                 PickerTitle = "Select APK File",
