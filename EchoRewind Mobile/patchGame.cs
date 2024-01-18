@@ -212,13 +212,13 @@ namespace EchoRelayInstaller
         public async Task CheckPrerequisites(string originalApkPath, string configPath)
         {
             if (!File.Exists(originalApkPath))
-                await ExitLog("Invalid EchoVR APK: Please drag and drop EchoVR APK onto exe");
+                await ExitLog("Failed to copy Echo VR APK, please restart the headset and try again");
 
             if (CalculateMD5(originalApkPath) != Hashes.APK)
-                await ExitLog("Invalid EchoVR APK (Hash mismatch) : please download the correct APK via\nOculusDB: https://oculusdb.rui2015.me/id/2215004568539258\nVersion: 4987566" + CalculateMD5(originalApkPath));
+                await ExitLog("Invalid EchoVR APK (Hash mismatch) : Please download the correct APK, it is version 4987566, it also has the most downloads on OculusDB");
 
             if (!File.Exists(configPath))
-                await ExitLog("Invalid Config: Config not found, please confirm config is in the same directory as the executable");
+                await ExitLog("Invalid Config: Failed to write config file, please restart the headset and try again");
 
             string ConfigString;
             try
@@ -227,7 +227,7 @@ namespace EchoRelayInstaller
             }
             catch (Exception)
             {
-                await ExitLog("Invalid Config: Config stream unreachable, please confirm no other programs are modifying config.json");
+                await ExitLog("Invalid Config: Failed to read config file, please restart the headset and try again");
                 return; // Just to make the compiler happy
             }
 
@@ -238,23 +238,27 @@ namespace EchoRelayInstaller
             }
             catch (Exception)
             {
-                await ExitLog("Invalid Config: Json could not be parsed, please confirm config formatting is correct");
+                await ExitLog("Invalid Config: Json could not be parsed, please reastart the headset and try again");
                 return;
             }
 
             if (!CheckJson(ConfigJson))
-                await ExitLog("Invalid Config: Service endpoints incorrect, please confrim all endpoitns are correct");
+                await ExitLog("Invalid Config: Service endpoints incorrect, please reastart the headset and try again");
 
             using var libpnsovr_patchStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.libpnsovr_patch.bin");
             if (libpnsovr_patchStream == null)
                 await ExitLog("libpnsovr_patch missing!");
+    
+            using var libr15_patch = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.libr15_patch.bin");
+            if (libr15_patch == null)
+                await ExitLog("libr15_patch missing!");
         }
 
         public async void StartPatching(string[] args)
         {
             Console.WriteLine("Parsing arguments...");
             if (args.Length == 0)
-                await ExitLog("Invalid EchoVR APK: Please drag and drop EchoVR APK onto exe");
+                await ExitLog("APK path missing, please restart the headset and try again");
 
 
             Console.WriteLine("Generating paths...");
@@ -289,7 +293,8 @@ namespace EchoRelayInstaller
                 }
             }
             var extractedLocalPath = Path.Join(extractedApkDir, "assets", "_local");
-            var extractedPnsRadOvrPath = Path.Join(extractedApkDir, @"lib/arm64-v8a/libpnsovr.so");
+            var extractedPnsRadOvrPath = Path.Join(extractedApkDir, @"lib", "arm64-v8a", "libpnsovr.so");
+            var extractedr15Path = Path.Join(extractedApkDir, @"lib", "arm64-v8a", "libr15.so");
 
             Console.WriteLine("Copying config.json...");
             Directory.CreateDirectory(extractedLocalPath); // No need to check for existence, as the hash will capture that
@@ -303,9 +308,20 @@ namespace EchoRelayInstaller
             oldPnsOvrFile.Close();
             newPnsOvrFile.Close();
 
+            Console.WriteLine("Patching libr15.so...");
+            using var oldr15File = File.OpenRead(extractedr15Path);
+            using var newr15File = File.Create(extractedr15Path + "_patched");
+            BinaryPatch.Apply(oldr15File, () => Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoRelayInstaller.Resources.Raw.libr15_patch.bin"), newr15File);
+            oldr15File.Close();
+            newr15File.Close();
+
             Console.WriteLine("Swapping pnsradovr.so...");
             File.Delete(extractedPnsRadOvrPath);
             File.Move(extractedPnsRadOvrPath + "_patched", extractedPnsRadOvrPath);
+
+            Console.WriteLine("Swapping libr15.so...");
+            File.Delete(extractedr15Path);
+            File.Move(extractedr15Path + "_patched", extractedr15Path);
 
             Console.WriteLine("Creating miscellaneous directory...");
             string miscDir = Path.Join(Path.GetTempPath(), "EchoQuest");

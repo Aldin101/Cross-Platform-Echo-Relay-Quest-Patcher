@@ -36,7 +36,7 @@ namespace EchoRelayInstaller {
 
             var header = new Label
             {
-                Text = "Create Echo Relay Account",
+                Text = "Create Account",
                 HorizontalOptions = LayoutOptions.Center,
                 Padding = new Thickness(0, 0, 0, 20),
                 FontSize = 24,
